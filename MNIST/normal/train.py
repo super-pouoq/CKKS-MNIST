@@ -1,68 +1,53 @@
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
-
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
+import os
 
-from model import SimpleMNIST
+from model import CNN 
 
-
-def main():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("Using device:", device)
+def train():
+    device = torch.device("cpu")
+    print("Downlonding the net")
 
     transform = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize((0.1307,), (0.3081,))
     ])
 
-    train_dataset = datasets.MNIST(
-        root="./data",
-        train=True,
-        download=False,
-        transform=transform
-    )
+    train_dataset = datasets.MNIST(root='./data', train=True, download=True, transform=transform)
+    train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=64,
-        shuffle=True
-    )
-
-    model = SimpleMNIST().to(device)
-
+    model = CNN().to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = optim.Adam(model.parameters(), lr=0.0005)
 
-    epochs = 5
+    epochs = 10
+    
+    os.makedirs("checkpoints", exist_ok=True)
+    os.makedirs("model", exist_ok=True)
 
     for epoch in range(epochs):
         model.train()
-        total_loss = 0.0
-
-        for images, labels in train_loader:
-            images = images.to(device)
-            labels = labels.to(device)
-
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
             loss.backward()
             optimizer.step()
 
-            total_loss += loss.item()
+            if batch_idx % 200 == 0:
+                print(f"Epoch {epoch+1}/{epochs} | Batch {batch_idx}/{len(train_loader)} | Loss: {loss.item():.4f}")
+        
+        checkpoint_path = f"checkpoints/model_epoch_{epoch+1}.pth"
+        torch.save(model.state_dict(), checkpoint_path)
+        print(f"-> Saving the checkpoint: {checkpoint_path}")
 
-        avg_loss = total_loss / len(train_loader)
-        print(f"Epoch [{epoch + 1}/{epochs}], Loss: {avg_loss:.4f}")
-
-    os.makedirs("./checkpoints", exist_ok=True)
-    torch.save(model.state_dict(), "./checkpoints/mnist_mlp.pth")
-
-    print("Model saved to ./checkpoints/mnist_mlp.pth")
-
+    final_save_path = "model/fhe_friendly_cnn.pth"
+    torch.save(model.state_dict(), final_save_path)
+    print(f"\nTraining over {final_save_path}")
 
 if __name__ == "__main__":
-    main()
+    train()
