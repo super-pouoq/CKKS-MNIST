@@ -1,1 +1,15 @@
 .vscode/
+
+# FHE 编译产物
+FHE/CPU/phantom-fhe/build/
+FHE/CPU/phantom-fhe/build-wsl/
+FHE/CPU/ckks-demo/build/
+FHE/GPU/phantom-fhe/build/
+FHE/GPU/phantom-fhe/build-wsl/
+FHE/GPU/ckks-demo/build/
+FHE/GPU/ckks-mnist/build/
+**/CMakeCache.txt
+**/CMakeFiles/
+*.so
+*.o
+*.obj
