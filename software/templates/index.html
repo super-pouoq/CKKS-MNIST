@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FHE-Friendly MNIST 识别系统</title>
+    <style>
+        /*1. 基础样式与可扩展的网格布局 */
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 { margin-bottom: 30px; color: var(--primary-color); }
+
+        /* Flexbox*/
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 2. 画板与控制区样式 */
+        .canvas-section {
+            width: 320px;
+        }
+
+        canvas {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            cursor: crosshair;
+            margin-bottom: 15px;
+            touch-action: none; /* 防止手机端触控滚动页面 */
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.8; }
+        .btn-clear { background-color: #ef4444; color: white; }
+        .btn-predict { background-color: var(--primary-color); color: white; }
+
+        /*3. 数据展示区样式 (专为未来扩展设计)*/
+        .results-section {
+            width: 400px;
+            align-items: flex-start;
+        }
+
+        .results-section h2 { margin-top: 0; font-size: 20px; border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; width: 100%; }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 18px;
+        }
+
+        .prediction-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-align: center;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .status-text { color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <h1>FHE 友好型 AI 识别终端</h1>
+
+    <div class="dashboard-container">
+        
+        <div class="card canvas-section">
+            <canvas id="paintCanvas" width="280" height="280"></canvas>
+            <div class="button-group">
+                <button class="btn-clear" onclick="clearCanvas()">清空画板</button>
+                <button class="btn-predict" onclick="sendPrediction()">发送识别</button>
+            </div>
+        </div>
+
+        <div class="card results-section">
+            <h2>模型推理结果</h2>
+            
+            <div class="result-item">
+                <span>识别数字：</span>
+            </div>
+            <div id="predictionResult" class="prediction-number">-</div>
+
+            <div class="result-item">
+                <span>模型状态：</span>
+                <span id="modelStatus" style="font-weight: bold;">等待输入...</span>
+            </div>
+            
+            <div class="result-item" style="color: #9ca3af; margin-top: 30px;">
+                <span>[预留] 加密推理耗时：</span>
+                <span>-- ms</span>
+            </div>
+            <p class="status-text" id="logText">系统已就绪，请在左侧写下一个 0-9 的数字。</p>
+        </div>
+
+    </div>
+
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        // 初始化画板 
+        function initCanvas() {
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 20; // 较粗的记号笔
+            ctx.lineCap = "round";
+            ctx.strokeStyle = "black";
+        }
+        initCanvas();
+
+        // 鼠标/触摸绘制逻辑
+        function startDrawing(e) {
+            isDrawing = true;
+            draw(e);
+        }
+        function stopDrawing() {
+            isDrawing = false;
+            ctx.beginPath(); 
+        }
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault(); 
+            
+            // 兼容鼠标和触摸屏
+            let rect = canvas.getBoundingClientRect();
+            let x = (e.clientX || e.touches[0].clientX) - rect.left;
+            let y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+            ctx.lineTo(x, y);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+        }
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // 手机端触摸事件
+        canvas.addEventListener('touchstart', startDrawing);
+        canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDrawing);
+
+        // 清空画板按钮
+        function clearCanvas() {
+            initCanvas();
+            document.getElementById('predictionResult').innerText = '-';
+            document.getElementById('modelStatus').innerText = '等待输入...';
+            document.getElementById('modelStatus').style.color = '#1f2937';
+            document.getElementById('logText').innerText = '画板已清空，请重新书写。';
+        }
+
+        // 发送给后端并接收数据
+        async function sendPrediction() {
+            const resultDiv = document.getElementById('predictionResult');
+            const statusDiv = document.getElementById('modelStatus');
+            const logDiv = document.getElementById('logText');
+
+            statusDiv.innerText = '推理中...';
+            statusDiv.style.color = '#d97706'; // 橙色
+            logDiv.innerText = '正在将图像数据发送至 FHE 后端...';
+
+            // 把画板内容变成 base64 文本数据
+            const dataURL = canvas.toDataURL('image/png');
+
+            try {
+                // 发送 POST 请求给你的 Flask 服务器
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: dataURL })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    resultDiv.innerText = result.prediction;
+                    statusDiv.innerText = '推理完成';
+                    statusDiv.style.color = '#16a34a'; // 绿色
+                    logDiv.innerText = '网络层 (平方激活) 前向传播成功。';
+                } else {
+                    resultDiv.innerText = 'X';
+                    statusDiv.innerText = '报错了';
+                    statusDiv.style.color = '#ef4444'; // 红色
+                    logDiv.innerText = '错误信息: ' + result.error;
+                }
+            } catch (error) {
+                resultDiv.innerText = '!';
+                statusDiv.innerText = '网络连接失败';
+                statusDiv.style.color = '#ef4444';
+                logDiv.innerText = '请确保后端服务器正在运行中。';
+            }
+        }
+    </script>
+</body>
+</html>
