@@ -1,34 +1,33 @@
 # CKKS-MNIST
 ## TODO LIST
-# TODO：FHE-MNIST + FIDESlib GPU 加速作品赛
 
 
 ## 1. 明文模型
 
-- [ ] 训练 FHE-friendly MNIST 模型
-- [ ] 用线性函数替代 ReLU
-- [ ] 测试明文准确率
-- [ ] 保存模型权重
-- [ ] 导出推理所需参数
-- [ ] 记录明文推理耗时
+- [x] 训练 FHE-friendly MNIST 模型
+- [x] 用线性函数替代 ReLU
+- [x] 测试明文准确率
+- [x] 保存模型权重
+- [x] 导出推理所需参数
+- [x] 记录明文推理耗时
 
 ---
 
 ## 2. FHE 推理流程
 
-- [ ] 生成 CKKS 参数与密钥
-- [ ] 实现图片编码与加密
-- [ ] 实现密文推理流程
-- [ ] 实现结果解密与分类
-- [ ] 跑通单张 MNIST FHE 推理
-- [ ] 统计 FHE 准确率与耗时
+- [x] 生成 CKKS 参数与密钥
+- [x] 实现图片编码与加密
+- [x] 实现密文推理流程
+- [x] 实现结果解密与分类
+- [x] 跑通单张 MNIST FHE 推理
+- [x] 统计 FHE 准确率与耗时
 
 ---
 
-## 3. FIDESlib GPU 实验
+## 3. Phantom GPU 实验
 
-- [ ] 跑通 GPU 端 CKKS 基础操作
-- [ ] 对比 OpenFHE CPU 与 FIDESlib GPU 性能
+- [x] 跑通 GPU 端 CKKS 基础操作
+- [ ] 对比 OpenFHE CPU 与 Phantom GPU 性能
 - [ ] 记录 Add / Mul / Square / Rotate 等操作耗时
 - [ ] 统计 GPU 加速比
 - [ ] 整理 primitive benchmark 图表
@@ -61,7 +60,7 @@
 ## 6. 软件展示
 
 - [ ] 搭建展示界面
-- [ ] 支持上传或选择 MNIST 图片
+- [x] 支持上传或选择 MNIST 图片
 - [ ] 展示加密前图片
 - [ ] 展示密文推理流程
 - [ ] 展示解密预测结果

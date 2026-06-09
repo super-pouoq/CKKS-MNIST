@@ -91,7 +91,7 @@ namespace phantom {
                 reduction_threshold);
     }
 
-// cks refers to cipher to be key-switched
+// cks refers to cipher to be key-switched //pouoqmark
     void keyswitch_inplace(const PhantomContext &context, PhantomCiphertext &encrypted, uint64_t *c2,
                            const PhantomRelinKey &relin_keys, bool is_relin, const cudaStream_t &stream) {
         const auto &s = stream;

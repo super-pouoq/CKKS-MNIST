@@ -526,7 +526,7 @@ __global__ static void modup_copy_partQl_kernel(uint64_t *t_mod_up, const uint64
         t_mod_up[beta_idx * size_QlP_n + tid] = cks[tid];
     }
 }
-
+//pouoqmark
 void DRNSTool::modup(uint64_t *dst, const uint64_t *cks, const DNTTTable &ntt_tables, const scheme_type &scheme,
                      const cudaStream_t &stream) const {
     size_t n = n_;

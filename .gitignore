@@ -8,8 +8,27 @@ FHE/GPU/phantom-fhe/build/
 FHE/GPU/phantom-fhe/build-wsl/
 FHE/GPU/ckks-demo/build/
 FHE/GPU/ckks-mnist/build/
+
 **/CMakeCache.txt
 **/CMakeFiles/
 *.so
 *.o
 *.obj
+# 前端 (FHE/frontend, Vue + Vite)
+FHE/frontend/node_modules/
+FHE/frontend/dist/
+FHE/frontend/.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 后端 (FHE/backend, Flask)
+FHE/backend/__pycache__/
+**/__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 后端运行时的临时请求目录 (写 images.txt 用)
+ckks_req_*/
