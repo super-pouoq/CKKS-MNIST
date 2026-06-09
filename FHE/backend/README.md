@@ -7,16 +7,31 @@
 
 - 监听 `0.0.0.0:5000`
 
+## 路径配置
+
+工程路径不写死：后端按 `app.py` 自身位置推导出 CUDA 工程目录
+（`<app.py 所在目录>/../GPU/ckks-mnist`），并自动把 Windows 路径转换成 WSL
+（`/mnt/<盘符>/...`）路径。只要 `backend/` 与 `GPU/ckks-mnist/` 保持同级，
+整个目录搬到哪都能用。
+
+如需覆盖，可设以下环境变量：
+
+| 变量            | 含义                          | 默认值                          |
+| --------------- | ----------------------------- | ------------------------------- |
+| `CKKS_DIR_WIN`  | CUDA 工程的 Windows 路径      | 由 `app.py` 位置推导            |
+| `CKKS_DIR_WSL`  | CUDA 工程的 WSL 路径          | 由 `CKKS_DIR_WIN` 转换得到      |
+| `CUDA_DIR`      | CUDA 安装目录                 | `/usr/local/cuda-12.6`          |
+
 ## 接口
 
 ### `GET /api/health`
 
-健康检查。
+健康检查，返回当前使用的 CUDA 工程 WSL 路径。
 
 返回：
 
 ```json
-{ "status": "ok", "ckks_dir": "/mnt/d/LEARN/CKKS-MNIST/FHE/GPU/ckks-mnist" }
+{ "status": "ok", "ckks_dir": "<推导出的 ckks-mnist WSL 路径>" }
 ```
 
 ### `POST /api/predict`
